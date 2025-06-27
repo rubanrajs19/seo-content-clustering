@@ -1,0 +1,10 @@
+streamlit
+pandas
+matplotlib
+seaborn
+scikit-learn
+umap-learn
+transformers
+torch
+tqdm
+openai
