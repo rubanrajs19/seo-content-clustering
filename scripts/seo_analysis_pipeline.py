@@ -13,7 +13,7 @@ from local_ollama_embed import get_mistral_embedding  # Must exist and return a 
 
 # ---------- Step 1: Load content ----------
 print("Loading content.csv...")
-df = pd.read_csv("../content.csv")
+df = pd.read_csv("../content.csv", encoding='ISO-8859-1')
 
 # Validate required columns
 required_cols = ["BodyText", "Address"]
@@ -46,32 +46,39 @@ def get_embedding(text):
 
     # Try Ollama + Mistral
     emb = get_mistral_embedding(text)
-    if emb:
+    if emb is not None:
         print("Using Ollama Embeddings (sfr-embedding-mistral)...")
         return emb
 
     # Fallback: Hugging Face
-    print("Using Hugging Face MiniLM Embeddings...")
-    tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
-    model = AutoModel.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-    with torch.no_grad():
-        outputs = model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+    # print("Using Hugging Face MiniLM Embeddings...")
+    # tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+    # model = AutoModel.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+    # inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
+    # with torch.no_grad():
+    #     outputs = model(**inputs)
+    # return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
 
 # ---------- Step 4: Generate embeddings ----------
 print("Generating embeddings...")
 embeddings = []
+EXPECTED_DIM = 4096 
 for text in tqdm(df['BodyText'].fillna('')):
     try:
         emb = get_embedding(text)
-        embeddings.append(emb)
+        if isinstance(emb, list) and len(emb) == EXPECTED_DIM:
+            embeddings.append(emb)
+        else:
+            print("⚠️ Invalid embedding shape. Falling back to zero vector.")
+            embeddings.append([0.0] * EXPECTED_DIM)
     except Exception as e:
         print("Embedding error:", e)
-        embeddings.append(None)
+        embeddings.append([0.0] * EXPECTED_DIM)
 
-df['embedding'] = embeddings
+# df['embedding'] = embeddings
+df['embedding'] = [list(e) if isinstance(e, (np.ndarray, list)) else [0.0] * 4096 for e in embeddings]
 df = df[df['embedding'].notnull()].reset_index(drop=True)
+df.to_pickle("embedded_content.pkl")
 
 if df.empty:
     print("No embeddings generated. Exiting.")

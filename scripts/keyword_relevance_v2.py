@@ -56,5 +56,11 @@ keyword_df['similarity'] = similarities
 keyword_df['relevance'] = relevances
 
 # ---------- Save ----------
-keyword_df.to_csv("keyword_relevance_output.csv", index=False)
+keyword_df.rename(columns={
+    'similarity': 'Cosine Similarity',
+    'relevance': 'Relevance'
+}, inplace=True)
+
+keyword_df[['Keyword', 'URL', 'Cosine Similarity', 'Relevance']].to_csv("keyword_relevance_output.csv", index=False)
+
 print("Saved: keyword_relevance_output.csv")

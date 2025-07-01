@@ -1,0 +1,17 @@
+1. Seo_anaysis_pipeline ---> content.csv
+		print("- embedded_content.pkl")
+		print("- similarity_matrix.csv")
+		print("- clustered_content.csv")
+		print("- content_clusters.png")
+
+2. generate_keyword_embedding ---> keywords.csv
+		print("✅ keyword_embeddings.csv saved.")
+
+3. keyword_revelance_v2.py
+		print("Saved: keyword_relevance_output.csv")
+
+4. Internal_linking.py---> keyword_embeddings.csv, embedded_content.pkl
+		print("✅ Saved: keyword-internal-link-mapping.xlsx")
+
+5. Redirect_mapping.py ---> keyword_embeddings.csv, embedded_content.pkl
+		print("✅ Saved: link-prospect-relevance.csv")

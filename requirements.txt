@@ -8,3 +8,5 @@ transformers
 torch
 tqdm
 openai
+openpyxl
+huggingface_hub

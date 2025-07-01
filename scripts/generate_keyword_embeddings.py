@@ -1,18 +1,23 @@
-# generate_keyword_embeddings.py
 import pandas as pd
-from local_ollama_embed import get_mistral_embedding  # or OpenAI if preferred
+from local_ollama_embed import get_mistral_embedding
 import numpy as np
+import csv
 
-df = pd.read_csv("keywords.csv")  # columns: Keyword, URL
+# Load keywords + URLs
+df = pd.read_csv("keywords.csv")  # expects: Keyword, URL
 embeddings = []
 
+# Generate embeddings
 for text in df['Keyword'].fillna(''):
-    emb = get_mistral_embedding(text)  # or OpenAI
+    emb = get_mistral_embedding(text)
     if emb is not None:
         embeddings.append(emb)
     else:
-        embeddings.append([0]*384)  # fallback zero-vector
+        embeddings.append([0] * 4096)
 
-df['embedding'] = embeddings
-df.to_csv("keyword_embeddings.csv", index=False)
+# Convert embeddings to string before saving
+df['embedding'] = [str(e) for e in embeddings]  # ✅ Make it a safe string
+
+# Save with quoting to prevent Excel parsing issues
+df.to_csv("keyword_embeddings.csv", index=False, quoting=csv.QUOTE_ALL)
 print("✅ keyword_embeddings.csv saved.")
